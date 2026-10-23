@@ -4,15 +4,21 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/ui": "~58.0.22",
+    "@expo/vector-icons": "^15.0.2",
+    "@supabase/supabase-js": "^2.118.0",
     "expo": "~58.0.17",
+    "expo-clipboard": "~58.0.4",
     "expo-constants": "~58.0.13",
     "expo-device": "~58.0.5",
+    "expo-document-picker": "~58.0.4",
     "expo-font": "~58.0.9",
     "expo-glass-effect": "~58.0.4",
     "expo-image": "~58.0.16",
+    "expo-image-picker": "~58.0.10",
     "expo-linking": "~58.0.14",
     "expo-router": "~58.0.25",
     "expo-splash-screen": "~58.0.11",
+    "expo-sqlite": "~58.0.13",
     "expo-status-bar": "~58.0.4",
     "expo-symbols": "~58.0.4",
     "expo-system-ui": "~58.0.6",
@@ -25,19 +31,31 @@
     "react-native-safe-area-context": "~5.10.1",
     "react-native-screens": "~4.30.0",
     "react-native-web": "~0.21.4",
-    "react-native-worklets": "0.13.0"
+    "react-native-worklets": "0.13.0",
+    "read-excel-file": "^9.3.12"
   },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
     "@types/react": "~19.3.0",
-    "typescript": "~6.0.3"
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
+    "pg": "^8.23.1",
+    "playwright-core": "^1.56.1",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5"
   },
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
+    "web": "expo start --web",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit && tsc -p supabase/functions/tsconfig.json",
+    "test": "vitest run --project unit",
+    "test:db": "bash scripts/db-reset-test.sh && vitest run --project db",
+    "build:web": "expo export -p web",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "private": true
 }

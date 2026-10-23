@@ -41,3 +41,14 @@ example
 # generated native folders
 /ios
 /android
+
+# local tooling
+.env
+coverage/
+
+# e2e artifacts
+e2e/output/
+e2e/local-stack/.bin/
+e2e/local-stack/.logs/
+e2e/local-stack/keys.json
+e2e/local-stack/files/
