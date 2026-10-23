@@ -1,56 +1,65 @@
-# Welcome to your Expo app 👋
+# Flowmont
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Flowmont to aplikacja SaaS dla firm montażowych (np. montaż okien), które przyjmują zlecenia od sklepów partnerskich.
+Sklep zgłasza termin i dane montażu → firma montażowa akceptuje lub odrzuca → przydziela ekipę → ekipa realizuje montaż w terenie.
 
-## Get started
+- **Aplikacja:** Expo SDK 58 (React Native + Expo Router) – jedna baza kodu dla **przeglądarki (panel administratora), iOS i Androida**.
+- **Backend:** Supabase – PostgreSQL z politykami RLS, logowanie (e-mail, link, Google), prywatne pliki, Edge Functions.
+- **Powiadomienia:** kolejka (outbox) w bazie + wymienne adaptery: Resend (e-mail), SMSAPI.pl lub Twilio (SMS), tryb testowy.
+- **Płatności:** Stripe (tryb testowy) przez Edge Functions; plany i ceny konfigurowalne, bez zaszytych kwot.
 
-1. Install dependencies
+Całe UI, komunikaty i e-maile są po polsku, daty w strefie Europe/Warsaw.
 
-   ```bash
-   npm install
-   ```
+## Szybki start (lokalnie)
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Wymagania: Node 20+, [Supabase CLI](https://supabase.com/docs/guides/local-development) i Docker.
 
 ```bash
-npm run reset-project
+npm install
+npx supabase start            # lokalna baza + auth + storage (migracje z supabase/migrations)
+cp .env.example .env.local    # wpisz URL i klucz z `npx supabase status`
+npm run web                   # http://localhost:8081
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Telefon: `npm start` i zeskanuj kod QR (Expo Go) albo zbuduj development build (`npx eas-cli build --profile development`).
 
-### Other setup steps
+Dane demo (fikcyjne firmy, sklepy, ekipy i zlecenia we wszystkich statusach):
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY=<service_role z supabase status> npm run seed:demo -- --reset
+```
 
-## Learn more
+## Polecenia
 
-To learn more about developing your project with Expo, look at the following resources:
+| Polecenie | Co robi |
+| --- | --- |
+| `npm run web` / `npm start` | serwer deweloperski (web / telefon) |
+| `npm run typecheck` | TypeScript (aplikacja + współdzielony kod Edge Functions) |
+| `npm run lint` | ESLint (konfiguracja Expo + reguły React Compiler) |
+| `npm test` | testy jednostkowe (daty, statusy, import, adaptery, Stripe) |
+| `npm run test:db` | testy bazy na PostgreSQL: izolacja firm i sklepów, uprawnienia, statusy, kolizje, trial, powiadomienia, import |
+| `npm run build:web` | produkcyjny build web do `dist/` |
+| `npm run seed:demo` | dane demonstracyjne |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+`test:db` potrzebuje dostępu do serwera PostgreSQL (zmienne `PGHOST`, `PGPORT`, `PGUSER`; domyślny adres testów: `TEST_DATABASE_URL`).
 
-## Join the community
+## Struktura
 
-Join our community of developers creating universal apps.
+```
+src/app/            ekrany (Expo Router) – (app)/ = część po zalogowaniu
+src/features/       logika ekranów: sesja i role, kalendarz, zlecenia, import, administracja
+src/components/ui/  komponenty interfejsu (dostępne, z dużymi polami dotyku)
+src/lib/            daty (Europe/Warsaw), statusy, klient Supabase, błędy
+supabase/migrations schemat, RLS, reguły rezerwacji, powiadomienia, import, billing
+supabase/functions  Edge Functions: process-outbox, billing-checkout, billing-portal, billing-webhook
+supabase/tests      testy integracyjne bazy
+scripts/            reset bazy testowej, seed demo
+docs/               konfiguracja, architektura, instrukcja, wyniki testów
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Dokumentacja
+
+- [docs/KONFIGURACJA.md](docs/KONFIGURACJA.md) – Supabase, domeny i logowanie (w tym Google), e-mail, SMS, Stripe, harmonogram, wdrożenie web i mobile
+- [docs/ARCHITEKTURA.md](docs/ARCHITEKTURA.md) – model danych, izolacja firm, reguły rezerwacji, statusy, dostęp po okresie próbnym, decyzje i założenia
+- [docs/INSTRUKCJA.md](docs/INSTRUKCJA.md) – krótka instrukcja dla administratora, sklepu i ekipy
+- [docs/TESTY.md](docs/TESTY.md) – co zostało sprawdzone, wyniki i czego nie dało się zweryfikować
